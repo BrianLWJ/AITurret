@@ -1,8 +1,7 @@
-namespace Turret {
+namespace Turret
+{
     public interface IPredicate
     {
         bool Evaluate();
     }
 }
-
-

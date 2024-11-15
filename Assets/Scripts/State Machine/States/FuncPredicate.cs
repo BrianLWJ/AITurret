@@ -1,4 +1,5 @@
 using System;
+
 namespace Turret
 {
     public class FuncPredicate : IPredicate

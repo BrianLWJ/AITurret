@@ -1,58 +1,65 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class ObjectPooler
+public class ObjectPooler
 {
-    public static Dictionary<string, Component> poolLookup = new Dictionary<string, Component>();
-    public static Dictionary<string, Queue<Component>> poolDictionary = new Dictionary<string, Queue<Component>>();
+    // Dictionary to store multiple pools, identified by unique keys
+    private static Dictionary<string, ObjectPooler> poolers = new Dictionary<string, ObjectPooler>();
+    private Queue<Component> poolQueue;
+    private Component prefab;
 
-    public static void EnqueueObject<T>(T item, string name) where T : Component //DEFINE T = component
+    // Private constructor to prevent external instantiation
+    private ObjectPooler(Component prefab, int initialPoolSize)
     {
-        if (!item.gameObject.activeSelf) return;
+        poolQueue = new Queue<Component>();
+        this.prefab = prefab;
 
-        item.transform.position = Vector3.zero;
-        poolDictionary[name].Enqueue(item);
-        item.gameObject.SetActive(false);
+        // Instantiate the initial pool of objects
+        for (int i = 0; i < initialPoolSize; i++)
+        {
+            var instance = Object.Instantiate(prefab);
+            instance.gameObject.SetActive(false);
+            poolQueue.Enqueue(instance);
+        }
     }
 
-    public static T DequeueObject<T>(string key) where T : Component
-    {   //return (T)poolDictionary[key].Dequeue();
-        if (!poolDictionary.ContainsKey(key))
+    // Method to get or create a pool for the specified key and prefab
+    public static void SetupPool<T>(T prefab, int initialPoolSize, string key) where T : Component
+    {
+        if (!poolers.ContainsKey(key))
         {
-            Debug.LogError($"Pool for key '{key}' is not initialized.");
-            return null;
+            poolers[key] = new ObjectPooler(prefab, initialPoolSize);
         }
-        if (poolDictionary[key].TryDequeue(out var item))
+    }
+
+    // Enqueue an object back into the pool
+    public static void EnqueueObject<T>(T item, string key) where T : Component
+    {
+        if (poolers.ContainsKey(key) && item.gameObject.activeSelf)
         {
+            item.transform.position = Vector3.zero;
+            item.gameObject.SetActive(false);
+            poolers[key].poolQueue.Enqueue(item);
+        }
+    }
+
+    // Dequeue an object from the pool
+    public static T DequeueObject<T>(string key) where T : Component
+    {
+        if (poolers.ContainsKey(key) && poolers[key].poolQueue.Count > 0)
+        {
+            var item = poolers[key].poolQueue.Dequeue();
+            item.gameObject.SetActive(true);
             return (T)item;
         }
-
-        return (T)EnqueueNewInstance(poolLookup[key], key);
-
-    }
-
-    public static T EnqueueNewInstance<T>(T item, string key) where T : Component
-    {
-        T newInstance = Object.Instantiate(item);
-        newInstance.gameObject.SetActive(false);
-        newInstance.transform.position = Vector3.zero; // Vector3 for 3D
-        poolDictionary[key].Enqueue(newInstance);
-        return newInstance;
-    }
-
-    public static void SetupPool<T>(T pooledItemPrefab, int poolSize, string dictionaryEntry) where T : Component
-    {
-        poolDictionary.Add(dictionaryEntry, new Queue<Component>());
-        poolLookup.Add(dictionaryEntry, pooledItemPrefab);
-
-        for (int i = 0; i < poolSize; i++)
+        else if (poolers.ContainsKey(key))
         {
-            T pooledInstance = Object.Instantiate(pooledItemPrefab);
-            pooledInstance.gameObject.SetActive(false);
-            pooledInstance.transform.position = Vector3.zero; // Changed to Vector3 for 3D
-            poolDictionary[dictionaryEntry].Enqueue((T)pooledInstance); //HERE CHANGED
+            // If no available item in pool, instantiate a new one
+            var newInstance = Object.Instantiate(poolers[key].prefab);
+            return (T)newInstance;
         }
+
+        Debug.LogError($"Pool with key '{key}' does not exist.");
+        return null;
     }
 }
-

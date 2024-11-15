@@ -13,9 +13,8 @@ namespace Turret
         {
             var transition = GetTransition();
             if (transition != null)
-            {
                 ChangeState(transition.To);
-            }
+
             current.State?.Update();
         }
 
@@ -26,10 +25,9 @@ namespace Turret
 
         public void SetState(IState state)
         {
-            current = nodes[state.GetType()]; //ERROR?
+            current = nodes[state.GetType()];
             current.State?.OnEnter();
         }
-
 
         void ChangeState(IState state)
         {
@@ -46,20 +44,13 @@ namespace Turret
         ITransition GetTransition()
         {
             foreach (var transition in anyTransitions)
-            {
                 if (transition.Condition.Evaluate())
-                {
                     return transition;
-                }
-            }
 
             foreach (var transition in current.Transitions)
-            {
                 if (transition.Condition.Evaluate())
-                {
                     return transition;
-                }
-            }
+
             return null;
         }
 
@@ -67,14 +58,15 @@ namespace Turret
         {
             GetOrAddNode(from).AddTransition(GetOrAddNode(to).State, condition);
         }
+
         public void AddAnyTransition(IState to, IPredicate condition)
         {
-            anyTransitions.Add(new Transition(GetOrAddNode(to).State, condition));//////item: 
+            anyTransitions.Add(new Transition(GetOrAddNode(to).State, condition));
         }
 
         StateNode GetOrAddNode(IState state)
         {
-            var node = nodes.GetValueOrDefault(state.GetType());//////key: 
+            var node = nodes.GetValueOrDefault(state.GetType());
 
             if (node == null)
             {
@@ -84,6 +76,7 @@ namespace Turret
 
             return node;
         }
+
         class StateNode
         {
             public IState State { get; }
@@ -97,9 +90,8 @@ namespace Turret
 
             public void AddTransition(IState to, IPredicate condition)
             {
-                Transitions.Add(new Transition(to,condition)); //////item:
+                Transitions.Add(new Transition(to, condition));
             }
         }
-
     }
 }

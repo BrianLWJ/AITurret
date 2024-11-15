@@ -1,16 +1,28 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
-    public BulletController bulletPrefab;
-    private void Awake()
+    [System.Serializable]
+    public struct BulletType
     {
-        SetupPool();
+        public string bulletName;
+        public BulletController bulletPrefab;
+        public int poolSize;
     }
 
-    private void SetupPool()
+    public List<BulletType> bulletTypes;
+
+    private void Awake()
     {
-        ObjectPooler.SetupPool(bulletPrefab, 10, "Bullet");
-        //ObjectPooler.Instance.SetupPool("Bullet", bulletPrefab, 10);
+        SetupBulletPools();
+    }
+
+    private void SetupBulletPools()
+    {
+        foreach (var bulletType in bulletTypes)
+        {
+            ObjectPooler.SetupPool(bulletType.bulletPrefab, bulletType.poolSize, bulletType.bulletName);
+        }
     }
 }
