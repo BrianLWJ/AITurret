@@ -94,7 +94,7 @@ namespace Turret
             Vector3 randomDirection = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)).normalized;
 
             Quaternion targetRotation = Quaternion.LookRotation(randomDirection);
-            turretBody.rotation = Quaternion.Slerp(turretBody.rotation, targetRotation, Time.deltaTime * 2f); // Adjust the speed as needed
+            turretBody.rotation = Quaternion.Slerp(turretBody.rotation, targetRotation, Time.deltaTime * 25f); // Adjust the speed as needed
         }
 
         // Tracking logic
