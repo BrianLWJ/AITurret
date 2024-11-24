@@ -27,7 +27,6 @@ namespace Turret
         public Color idleColor = Color.green;
         public Color shootColor = Color.blue;
         public Color reloadColor = Color.yellow;
-        public Color originalColor;
 
         public Transform firePoint;
         public string bulletType = "StandardBullet"; // Specify the bullet type by name here
@@ -38,7 +37,7 @@ namespace Turret
             currentAmmo = maxAmmo;
             fireCooldown = 0f;
             turretRenderer = GetComponent<Renderer>();
-            originalColor = turretRenderer.material.color;
+            //originalColor = turretRenderer.material.color;
         }
 
         private void Start()
@@ -208,7 +207,17 @@ namespace Turret
             turretRenderer.material.color = reloadColor; // Change to yellow when reloading
             yield return new WaitForSeconds(reloadTime);
             currentAmmo = maxAmmo;
-            turretRenderer.material.DOColor(originalColor, fadeDuration); // Return to original color after reloading
+
+            if (IsTargetInRange(shootingRange) && HasLineOfSight())
+            {
+                // If the player is still in range, change to blue and continue shooting
+                turretRenderer.material.DOColor(shootColor, fadeDuration);
+            }
+            else
+            {
+                // If the player is out of range, change to green and return to idle
+                turretRenderer.material.DOColor(idleColor, fadeDuration);
+            }
         }
 
         public bool NeedsReloading()
