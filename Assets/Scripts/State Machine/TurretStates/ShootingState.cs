@@ -27,7 +27,8 @@ namespace Turret
 
         public void Update()
         {
-            turret.OnShoot();
+            turret.TrackPlayer();
+            turret.Shoot();
         }
 
         public void FixedUpdate() { }

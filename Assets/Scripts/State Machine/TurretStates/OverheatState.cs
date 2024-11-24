@@ -16,20 +16,18 @@ namespace Turret
         public void OnEnter()
         {
             animator?.SetBool("IsOverheated", true);
-            turret.StartOverheating();
             Debug.Log("Entered Overheat State");
         }
 
         public void OnExit()
         {
             animator?.SetBool("IsOverheated", false);
-            turret.StopOverheating();
             Debug.Log("Exiting Overheat State");
         }
 
         public void Update()
         {
-            // Could add logic for cooling down
+            turret.StartOverheating();
         }
 
         public void FixedUpdate() { }

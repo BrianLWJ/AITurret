@@ -4,9 +4,10 @@ using UnityEngine;
 public class BulletController : MonoBehaviour
 {
     public float speed = 5.0f;
-    private float lifetime = 3.0f;
+    public float lifetime = 3.0f;
     private Rigidbody rb;
     public Vector3 direction;
+    public string bulletName; // Unique name for the bullet's pool
 
     private void Awake()
     {
@@ -21,6 +22,7 @@ public class BulletController : MonoBehaviour
         {
             rb = GetComponent<Rigidbody>();
         }
+
         // Normalize the direction to ensure consistent speed
         direction = fireDirection.normalized;
 
@@ -39,24 +41,27 @@ public class BulletController : MonoBehaviour
             Quaternion rotation = Quaternion.LookRotation(rb.linearVelocity);
             transform.rotation = rotation;
         }
+
+        // Start the lifetime countdown coroutine
+        StartCoroutine(LifetimeCoroutine());
     }
 
-    private void Update()
+    private IEnumerator LifetimeCoroutine()
     {
-        // Decrease the lifetime based on time passed
-        lifetime -= Time.deltaTime;
+        // Wait for the lifetime of the bullet to expire
+        yield return new WaitForSeconds(lifetime);
 
-        // If lifetime is less than or equal to zero, deactivate or recycle the bullet
-        if (lifetime <= 0.0f)
-        {
-            ObjectPooler.EnqueueObject(this, "Bullet");
-        }
+        // Return the bullet to the pool after its lifetime
+        ObjectPooler.EnqueueObject(this, bulletName);
+        Debug.Log("BACK YOU GO (Lifetime expired)");
     }
 
     // If the bullet collides with something, return it to the pool
     private void OnCollisionEnter(Collision collision)
     {
         // Return the bullet to the pool on any collision
-        ObjectPooler.EnqueueObject(this, "Bullet");
+        StartCoroutine(LifetimeCoroutine());
+        //ObjectPooler.EnqueueObject(this, "Bullet");
+        //Debug.Log("Bullet collided, returning to pool");
     }
 }
