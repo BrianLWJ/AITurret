@@ -49,7 +49,6 @@ public class ObjectPooler
         if (pool.poolQueue.Count > 0)
         {
             var item = pool.poolQueue.Dequeue();
-            item.gameObject.SetActive(true); // Activate the object
             return (T)item;
         }
 
