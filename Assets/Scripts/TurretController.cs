@@ -1,74 +1,88 @@
 using UnityEngine;
 using System.Collections;
-using DG.Tweening;
+using DG.Tweening; //Fade Color Smoothly
 
 namespace Turret
 {
     public class TurretController : MonoBehaviour
     {
+        [Header("Turret Properties")]
+        public Transform turretBody;
+        private Renderer turretRenderer;
+        private Animator animator;
+        private StateMachine stateMachine;
+        public Transform firePoint;
+
+        [Header("Player Detector")] 
         public Transform player;
         public float shootingRange = 10f;
-        public float fireRate = 1f; // Fire rate in seconds
+
+        [Header("Shooting Logic")]
+        public float fireRate = 1f;
         public float reloadTime = 6f;
         public int maxAmmo = 30;
         private int currentAmmo;
-        private float fireCooldown;
         public float overHeatTime = 10f;
-        public float fadeDuration = 1f;
+        private float fireCooldown;
+        public float overheatShot = 15f;
 
-        public Transform turretBody;
-        private Animator animator;
-        private StateMachine stateMachine;
-
-        private int readyOverHeat = 0;
+        [Header("Overheat")]
+        public int readyOverHeat = 0;
         public bool overheatBool = false;
 
+        [Header("Turret States' Color")]
         public Color overheatColor = Color.red;
         public Color idleColor = Color.green;
         public Color shootColor = Color.blue;
         public Color reloadColor = Color.yellow;
 
-        public Transform firePoint;
-        //public string bulletType = "StandardBullet"; // Specify the bullet type by name here
-        public int bulletIndex;
-        private Renderer turretRenderer;
+        [Header("Object Pooler")]
+        //public string bulletType = "StandardBullet"; //bullet name
+        public int bulletIndex; //Number of Bullet Index
+
         
-        private void Awake()
+        private void Awake() //call before Start()
         {
-            currentAmmo = maxAmmo;
-            fireCooldown = 0f;
-            turretRenderer = GetComponent<Renderer>();
-            //originalColor = turretRenderer.material.color;
+            currentAmmo = maxAmmo;  //Turret Magazine is Full upon Launch
+            fireCooldown = 0f;      //Ensure fire cooldown = 0 so bullet shooot consistent
+            turretRenderer = GetComponent<Renderer>(); //To get renderer, enable turret change color
         }
 
         private void Start()
         {
-            SetupStateMachine();
+            SetupStateMachine(); //Setup State Machine Upon Launch
         }
 
         private void SetupStateMachine()
-        {
+        {   //Initialization for StateMachine
             stateMachine = new StateMachine();
 
+            //Declare States for Turrets
             var idleState = new IdleState(this, animator);
             var shootingState = new ShootingState(this, animator);
             var reloadingState = new ReloadingState(this, animator);
             var overheatState = new OverheatState(this, animator);
 
+            //Logic of Transition between Turret States
             At(idleState, shootingState, new FuncPredicate(() => IsTargetInRange(shootingRange) && HasLineOfSight()));
             At(shootingState, overheatState, new FuncPredicate(() => overheatBool));
             At(overheatState, shootingState, new FuncPredicate(() => IsTargetInRange(shootingRange) && !overheatBool));
 
+            //If Overheat & Reload Simultaneously, 1st Overheat > 2nd Reload
+            At(overheatState, reloadingState, new FuncPredicate(() => currentAmmo <= 0 && !overheatBool)); // Overheat happens first, reload after
+
             At(shootingState, reloadingState, new FuncPredicate(() => IsMaxAmmo()));
             At(reloadingState, shootingState, new FuncPredicate(() => IsTargetInRange(shootingRange) && HasLineOfSight()));
 
-            // Back to idle state
+            // Back to Idle state
             At(shootingState, idleState, new FuncPredicate(() => !IsTargetInRange(shootingRange) && !HasLineOfSight()));
-            At(overheatState, idleState, new FuncPredicate(() => !IsTargetInRange(shootingRange) && !HasLineOfSight()));
-            At(reloadingState, idleState, new FuncPredicate(() => !IsTargetInRange(shootingRange) && !HasLineOfSight()));
+            At(overheatState, idleState, new FuncPredicate(() => !IsTargetInRange(shootingRange) && !HasLineOfSight()  && !overheatBool));
+            At(reloadingState, idleState, new FuncPredicate(() => !IsTargetInRange(shootingRange) || !HasLineOfSight()  && !IsMaxAmmo()));
 
-            Any(idleState, new FuncPredicate(ReturnToIdleState)); //IDK HOW DOES THIS LINE WORKS, PROBABLY THE 3 LINES ABOVE ALREADY USE THIS LINE AS BASE. IDK
+            //Any(idleState, new FuncPredicate(ReturnToIdleState));
+            //Any(idleState, new FuncPredicate(() => !IsTargetInRange(shootingRange) && !HasLineOfSight()));
 
+            //Set Intial State
             stateMachine.SetState(idleState);
         }
 
@@ -89,8 +103,6 @@ namespace Turret
         // Idle state logic
         public void OnIdle()
         {
-            turretRenderer.material.color = idleColor; // Change to green when idle
-
             Vector3 randomDirection = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)).normalized;
 
             Quaternion targetRotation = Quaternion.LookRotation(randomDirection);
@@ -132,14 +144,13 @@ namespace Turret
         {
             if (currentAmmo > 0 && fireCooldown <= 0f && !overheatBool)
             {
-                turretRenderer.material.color = shootColor;
                 FireBullet(bulletIndex);
 
                 currentAmmo--;
                 fireCooldown = fireRate; // Reset fire cooldown
                 readyOverHeat++;
 
-                if (readyOverHeat >= 15) // Trigger overheating after 15 shots
+                if (readyOverHeat >= overheatShot) // Trigger overheating after ? shots
                 {
                     overheatBool = true; // Set the overheating flag
                     StartOverheating();
@@ -168,21 +179,12 @@ namespace Turret
         // Overheat logic
         public void StartOverheating()
         {
-            turretRenderer.material.color = overheatColor; // Change to red when overheating
             StartCoroutine(OverHeatCoroutine());
         }
 
         private IEnumerator OverHeatCoroutine()
         {
             yield return new WaitForSeconds(overHeatTime);
-             // Return to original color after cooling down
-            if (!IsTargetInRange(shootingRange) && !HasLineOfSight()){
-                turretRenderer.material.DOColor(idleColor, fadeDuration);
-            }
-            else
-            {
-                turretRenderer.material.DOColor(shootColor, fadeDuration);
-            }
             overheatBool = false;
             readyOverHeat = 0; // Reset overheating counter
         }
@@ -205,22 +207,11 @@ namespace Turret
 
         private IEnumerator ReloadCoroutine()
         {
-            turretRenderer.material.color = reloadColor; // Change to yellow when reloading
             yield return new WaitForSeconds(reloadTime);
             currentAmmo = maxAmmo;
-
-            if (IsTargetInRange(shootingRange) && HasLineOfSight())
-            {
-                // If the player is still in range, change to blue and continue shooting
-                turretRenderer.material.DOColor(shootColor, fadeDuration);
-            }
-            else
-            {
-                // If the player is out of range, change to green and return to idle
-                turretRenderer.material.DOColor(idleColor, fadeDuration);
-            }
         }
 
+        //Boolean for reloading required
         public bool NeedsReloading()
         {
             return currentAmmo <= 0;
@@ -229,7 +220,16 @@ namespace Turret
         // Back to idle
         private bool ReturnToIdleState()
         {
-            return false; // Update this condition as needed
+            return false; //Leave it Be
+        }
+
+        //Allow Turret To Indicate States By Color
+        public void ChangeTurretColor(Color targetColor)
+        {
+            if (turretRenderer != null)
+            {
+                turretRenderer.material.color = targetColor;
+            }
         }
     }
 }

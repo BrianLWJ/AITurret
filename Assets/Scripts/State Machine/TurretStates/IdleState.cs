@@ -16,6 +16,7 @@ namespace Turret
         public void OnEnter()
         {
             animator?.SetBool("IsIdle", true);
+            turret.ChangeTurretColor(turret.idleColor);
             Debug.Log("Entered Idle State");
         }
 

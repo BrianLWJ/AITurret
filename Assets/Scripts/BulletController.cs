@@ -53,7 +53,7 @@ public class BulletController : MonoBehaviour
 
         // Return the bullet to the pool after its lifetime
         ObjectPooler.EnqueueObject(this, bulletIndex);
-        Debug.Log("BACK YOU GO (Lifetime expired)");
+        //Debug.Log("BACK YOU GO (Lifetime expired)");
     }
 
     // If the bullet collides with something, return it to the pool
@@ -62,6 +62,5 @@ public class BulletController : MonoBehaviour
         // Return the bullet to the pool on any collision
         StartCoroutine(LifetimeCoroutine());
         //ObjectPooler.EnqueueObject(this, "Bullet");
-        //Debug.Log("Bullet collided, returning to pool");
     }
 }

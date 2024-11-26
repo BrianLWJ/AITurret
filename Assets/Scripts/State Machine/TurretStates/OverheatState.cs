@@ -16,6 +16,7 @@ namespace Turret
         public void OnEnter()
         {
             animator?.SetBool("IsOverheated", true);
+            turret.ChangeTurretColor(turret.overheatColor);
             Debug.Log("Entered Overheat State");
         }
 

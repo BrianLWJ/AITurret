@@ -16,6 +16,7 @@ namespace Turret
         public void OnEnter()
         {
             animator?.SetBool("IsReloading", true);
+            turret.ChangeTurretColor(turret.reloadColor);
             turret.Reload();
             Debug.Log("Entered Reloading State");
         }
@@ -29,5 +30,6 @@ namespace Turret
         public void Update() { }
 
         public void FixedUpdate() { }
+
     }
 }

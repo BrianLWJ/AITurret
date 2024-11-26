@@ -16,6 +16,7 @@ namespace Turret
         public void OnEnter()
         {
             animator?.SetBool("IsShooting", true);
+            turret.ChangeTurretColor(turret.shootColor);
             Debug.Log("Entered Shooting State");
         }
 

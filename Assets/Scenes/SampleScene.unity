@@ -596,11 +596,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bulletTypes:
-  - bulletName: Bullet
+  - bulletIndex: 0
     bulletPrefab: {fileID: 950882921}
     poolSize: 5
     maxPoolSize: 6
-  - bulletName: Bullet1
+  - bulletIndex: 1
     bulletPrefab: {fileID: 943274131}
     poolSize: 5
     maxPoolSize: 6
@@ -931,6 +931,10 @@ PrefabInstance:
       propertyPath: bulletIndex
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2223048085982863073, guid: 5ae34d5fdc2e77a40bf842e9d4f6ac56, type: 3}
+      propertyPath: shootingRange
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 6064195027717400226, guid: 5ae34d5fdc2e77a40bf842e9d4f6ac56, type: 3}
       propertyPath: m_Name
       value: TURRET 1
@@ -992,6 +996,14 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 1348465337}
+    - target: {fileID: 2223048085982863073, guid: 5ae34d5fdc2e77a40bf842e9d4f6ac56, type: 3}
+      propertyPath: fireRate
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2223048085982863073, guid: 5ae34d5fdc2e77a40bf842e9d4f6ac56, type: 3}
+      propertyPath: shootingRange
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 6064195027717400226, guid: 5ae34d5fdc2e77a40bf842e9d4f6ac56, type: 3}
       propertyPath: m_Name
       value: TURRET
