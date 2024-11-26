@@ -29,7 +29,8 @@ namespace Turret
         public Color reloadColor = Color.yellow;
 
         public Transform firePoint;
-        public string bulletType = "StandardBullet"; // Specify the bullet type by name here
+        //public string bulletType = "StandardBullet"; // Specify the bullet type by name here
+        public int bulletIndex;
         private Renderer turretRenderer;
         
         private void Awake()
@@ -132,7 +133,7 @@ namespace Turret
             if (currentAmmo > 0 && fireCooldown <= 0f && !overheatBool)
             {
                 turretRenderer.material.color = shootColor;
-                FireBullet(bulletType);
+                FireBullet(bulletIndex);
 
                 currentAmmo--;
                 fireCooldown = fireRate; // Reset fire cooldown
@@ -150,7 +151,7 @@ namespace Turret
             }
         }
 
-        public void FireBullet(string bulletName)
+        public void FireBullet(int bulletName)
         {
             var bullet = ObjectPooler.DequeueObject<BulletController>(bulletName);
             if (bullet != null)

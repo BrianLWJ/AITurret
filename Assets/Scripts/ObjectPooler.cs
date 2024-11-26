@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class ObjectPooler
 {
-    private static Dictionary<string, ObjectPooler> poolers = new Dictionary<string, ObjectPooler>();
+    private static Dictionary<int, ObjectPooler> poolers = new Dictionary<int, ObjectPooler>();
 
     private Queue<Component> poolQueue; // Queue for objects in this pool
     private Component prefab;           // Prefab for this pool
@@ -26,7 +26,7 @@ public class ObjectPooler
     }
 
     // Setup a pool with a unique key
-    public static void SetupPool<T>(T prefab, int initialPoolSize, int maxPoolSize, string key) where T : Component
+    public static void SetupPool<T>(T prefab, int initialPoolSize, int maxPoolSize, int key) where T : Component
     {
         if (!poolers.ContainsKey(key))
         {
@@ -35,7 +35,7 @@ public class ObjectPooler
     }
 
     // Get an object from the pool
-    public static T DequeueObject<T>(string key) where T : Component
+    public static T DequeueObject<T>(int key) where T : Component
     {
         if (!poolers.ContainsKey(key))
         {
@@ -49,9 +49,9 @@ public class ObjectPooler
         if (pool.poolQueue.Count > 0)
         {
             var item = pool.poolQueue.Dequeue();
+            item.gameObject.SetActive(true);
             return (T)item;
         }
-
         // If the pool is empty, instantiate a new object
         var newInstance = Object.Instantiate(pool.prefab);
         Debug.LogWarning($"Pool '{key}' is empty. Instantiating a new object.");
@@ -59,7 +59,7 @@ public class ObjectPooler
     }
 
     // Return an object to the pool
-    public static void EnqueueObject<T>(T item, string key) where T : Component
+    public static void EnqueueObject<T>(T item, int key) where T : Component
     {
         if (!poolers.ContainsKey(key))
         {
@@ -84,7 +84,6 @@ public class ObjectPooler
         {
             Debug.LogWarning($"Pool '{key}' is at max size. Reusing the oldest object.");
         }
-
         // Add the object back to the pool
         pool.poolQueue.Enqueue(item);
     }

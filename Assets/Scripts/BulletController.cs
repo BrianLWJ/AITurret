@@ -7,8 +7,8 @@ public class BulletController : MonoBehaviour
     public float lifetime = 3.0f;
     private Rigidbody rb;
     public Vector3 direction;
-    public string bulletName; // Unique name for the bullet's pool
-
+    //public string bulletName; // Unique name for the bullet's pool
+    public int bulletIndex; // Unique index for the bullet's pool
     private void Awake()
     {
         // Initialize Rigidbody reference only once
@@ -52,7 +52,7 @@ public class BulletController : MonoBehaviour
         yield return new WaitForSeconds(lifetime);
 
         // Return the bullet to the pool after its lifetime
-        ObjectPooler.EnqueueObject(this, bulletName);
+        ObjectPooler.EnqueueObject(this, bulletIndex);
         Debug.Log("BACK YOU GO (Lifetime expired)");
     }
 

@@ -22,9 +22,14 @@ public class GameManager : MonoBehaviour
     private void SetupBulletPools()
     {
         // Iterate through all bullet types and set up their respective pools
-        foreach (var bulletType in bulletTypes)
+        //foreach (var bulletType in bulletTypes)
+        //{
+        //    ObjectPooler.SetupPool(bulletType.bulletPrefab, bulletType.poolSize, bulletType.maxPoolSize, bulletType.bulletName);
+        //}
+        for (int i = 0; i < bulletTypes.Count; i++)
         {
-            ObjectPooler.SetupPool(bulletType.bulletPrefab, bulletType.poolSize, bulletType.maxPoolSize, bulletType.bulletName);
+            var bulletType = bulletTypes[i];
+            ObjectPooler.SetupPool(bulletType.bulletPrefab, bulletType.poolSize, bulletType.maxPoolSize, i);
         }
     }
 }
