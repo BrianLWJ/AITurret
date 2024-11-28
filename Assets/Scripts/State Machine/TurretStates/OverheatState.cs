@@ -18,6 +18,8 @@ namespace Turret
             animator?.SetBool("IsOverheated", true);
             turret.ChangeTurretColor(turret.overheatColor);
             Debug.Log("Entered Overheat State");
+            turret.StartOverheating();
+
         }
 
         public void OnExit()
@@ -28,7 +30,7 @@ namespace Turret
 
         public void Update()
         {
-            turret.StartOverheating();
+            turret.TrackPlayer();
         }
 
         public void FixedUpdate() { }

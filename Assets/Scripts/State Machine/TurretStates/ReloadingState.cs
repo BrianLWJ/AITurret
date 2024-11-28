@@ -17,8 +17,8 @@ namespace Turret
         {
             animator?.SetBool("IsReloading", true);
             turret.ChangeTurretColor(turret.reloadColor);
-            turret.Reload();
             Debug.Log("Entered Reloading State");
+            turret.Reload();
         }
 
         public void OnExit()
@@ -27,7 +27,10 @@ namespace Turret
             Debug.Log("Exiting Reloading State");
         }
 
-        public void Update() { }
+        public void Update()
+        {
+            turret.TrackPlayer();
+        }
 
         public void FixedUpdate() { }
 

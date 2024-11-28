@@ -939,6 +939,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TURRET 1
       objectReference: {fileID: 0}
+    - target: {fileID: 6064195027717400226, guid: 5ae34d5fdc2e77a40bf842e9d4f6ac56, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6936063687749289534, guid: 5ae34d5fdc2e77a40bf842e9d4f6ac56, type: 3}
       propertyPath: m_LocalPosition.x
       value: -1.92
@@ -997,8 +1001,16 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1348465337}
     - target: {fileID: 2223048085982863073, guid: 5ae34d5fdc2e77a40bf842e9d4f6ac56, type: 3}
+      propertyPath: maxAmmo
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 2223048085982863073, guid: 5ae34d5fdc2e77a40bf842e9d4f6ac56, type: 3}
       propertyPath: fireRate
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2223048085982863073, guid: 5ae34d5fdc2e77a40bf842e9d4f6ac56, type: 3}
+      propertyPath: overHeatTime
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 2223048085982863073, guid: 5ae34d5fdc2e77a40bf842e9d4f6ac56, type: 3}
       propertyPath: shootingRange
