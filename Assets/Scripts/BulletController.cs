@@ -11,11 +11,11 @@ public class BulletController : MonoBehaviour
     public int bulletIndex; // Unique index for the bullet's pool
     private void Awake()
     {
-        // Initialize Rigidbody reference only once
+        //Initialize Rigidbody reference
         rb = GetComponent<Rigidbody>();
     }
 
-    // Called when the bullet is fired
+    //Called when  bullet is fired
     public void Initialize(Vector3 fireDirection)
     {
         if (rb == null)
@@ -23,44 +23,44 @@ public class BulletController : MonoBehaviour
             rb = GetComponent<Rigidbody>();
         }
 
-        // Normalize the direction to ensure consistent speed
+        //Normalize direction, ensuring consistent speed
         direction = fireDirection.normalized;
 
-        // Set the velocity in the direction of fire
+        //Set velocity in direction of fire
         rb.linearVelocity = direction * speed;
 
-        // Make sure the bullet is active
+        //Bullet active
         gameObject.SetActive(true);
 
         // Reset the lifetime timer
         lifetime = 3.0f;
 
-        // Rotate the bullet to face the direction it is moving
+        //Rotate bullet to face the direction it's moving
         if (rb.linearVelocity.sqrMagnitude > 0)
         {
             Quaternion rotation = Quaternion.LookRotation(rb.linearVelocity);
             transform.rotation = rotation;
         }
 
-        // Start the lifetime countdown coroutine
+        // Start the lifetime countdown
         StartCoroutine(LifetimeCoroutine());
     }
 
-    private IEnumerator LifetimeCoroutine()
+    private IEnumerator LifetimeCoroutine()     //Bullet LifeTimer
     {
-        // Wait for the lifetime of the bullet to expire
+        //Wait for lifetime of bullet
         yield return new WaitForSeconds(lifetime);
 
-        // Return the bullet to the pool after its lifetime
+        //Return bullet to pool after lifetime
         ObjectPooler.EnqueueObject(this, bulletIndex);
-        //Debug.Log("BACK YOU GO (Lifetime expired)");
     }
 
-    // If the bullet collides with something, return it to the pool
-    private void OnCollisionEnter(Collision collision)
-    {
-        // Return the bullet to the pool on any collision
-        StartCoroutine(LifetimeCoroutine());
+    private void OnCollisionEnter(Collision collision)      // Return bullet to pool on collision
+
+    {        
+        StartCoroutine(LifetimeCoroutine());    // Start the lifetime countdown.    Possibly No need this, IT Depends
         //ObjectPooler.EnqueueObject(this, "Bullet");
+        //ObjectPooler.EnqueueObject(this, bulletIndex);
+
     }
 }

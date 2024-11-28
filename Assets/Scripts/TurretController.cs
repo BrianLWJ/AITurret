@@ -22,14 +22,17 @@ namespace Turret
         public float fireRate = 1f;
         private float fireCooldown;
 
-        [Header("Reloading")]
-        public float reloadTime = 6f;
-        public bool isReloading = false;
+        [Header("Idle")]
+        public float turretRotateSpeed = 25f;
 
         [Header("Overheat")]
         public int readyOverHeat = 0;
         public float overHeatTime = 10f;
         public bool overheatBool = false;
+
+        [Header("Reloading")]
+        public float reloadTime = 6f;
+        public bool isReloading = false;
 
         [Header("Turret State Colors")]
         public Color overheatColor = Color.red;
@@ -37,18 +40,20 @@ namespace Turret
         public Color shootColor = Color.blue;
         public Color reloadColor = Color.yellow;
 
+        [Header("Object Pooler")]
         public int bulletIndex;
 
+        //Declare before Start()
         private void Awake()
         {
-            currentAmmo = maxAmmo;
-            fireCooldown = 0f;
-            turretRenderer = GetComponent<Renderer>();
+            currentAmmo = maxAmmo;  //Fill current Ammo
+            fireCooldown = 0f;      //Reset fire Cooldown
+            turretRenderer = GetComponent<Renderer>(); //Get turret redenderer for color change
         }
 
         private void Start()
         {
-            SetupStateMachine();
+            SetupStateMachine();    //Setup State Machine
         }
 
         private void SetupStateMachine()
@@ -65,55 +70,57 @@ namespace Turret
             //Idle -> ?
             At(idleState, shootingState, new FuncPredicate(() => IsTargetInRange() && HasLineOfSight()));
 
-            //Shooting
+            //Shooting -> ?
             At(shootingState, overheatState, new FuncPredicate(() => overheatBool));
             At(shootingState, reloadingState, new FuncPredicate(() => currentAmmo <= 0));
             At(shootingState, idleState, new FuncPredicate(() => !IsTargetInRange()));
 
-            //Overheat
+            //Overheat -> ?
             At(overheatState, shootingState, new FuncPredicate(() => !overheatBool && IsTargetInRange() && HasLineOfSight()));
             At(overheatState, reloadingState, new FuncPredicate(() => !overheatBool && currentAmmo <= 0));
             At(overheatState, idleState, new FuncPredicate(() => !overheatBool && !IsTargetInRange()));
 
-            //Reloading
+            //Reloading -> ?
             At(reloadingState, shootingState, new FuncPredicate(() => !isReloading && currentAmmo > 0 && IsTargetInRange() && HasLineOfSight()));
             At(reloadingState, idleState, new FuncPredicate(() => currentAmmo > 0 && !IsTargetInRange()));
 
-            // Set the initial state
+            // Set initial state
             stateMachine.SetState(idleState);
         }
 
         void At(IState from, IState to, IPredicate condition) => stateMachine.AddTransition(from, to, condition);
-
+        void Any(IState to, IPredicate condition) => stateMachine.AddAnyTransition(to, condition); //NOT USED DUE TO MULTIPLE DIFF REQUIREMENTS FOR TRANSITIONS
         private void Update()
         {
-            stateMachine.Update();
-            fireCooldown -= Time.deltaTime;
+            stateMachine.Update();          //Constant State Machine Update for Use
+            fireCooldown -= Time.deltaTime; //Fire Cooldown for each bullet shot
         }
 
         private void FixedUpdate()
         {
-            stateMachine.FixedUpdate();
+            stateMachine.FixedUpdate(); //Constant State Machine Fixed Update for Use
         }
 
+        //Idle
         public void OnIdle()
         {
-            turretRenderer.material.color = idleColor;
+            //Random Turret Rotation to Simulate Idle State
             if (!IsTargetInRange())
             {
                 Vector3 randomDirection = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)).normalized;
                 Quaternion targetRotation = Quaternion.LookRotation(randomDirection);
-                turretBody.rotation = Quaternion.Slerp(turretBody.rotation, targetRotation, Time.deltaTime * 25f);
+                turretBody.rotation = Quaternion.Slerp(turretBody.rotation, targetRotation, Time.deltaTime * turretRotateSpeed);
             }
         }
 
-        public bool IsTargetInRange()
+        //Tracking
+        public bool IsTargetInRange()   //Detect IF Target is < Tracking Range
         {
             if (player == null) return false;
             return Vector3.Distance(transform.position, player.position) <= shootingRange;
         }
 
-        public void TrackPlayer()
+        public void TrackPlayer()       //IF Player is In Range, Move Turret To Look at Player
         {
             if (player == null || !IsTargetInRange()) return;
 
@@ -123,7 +130,7 @@ namespace Turret
             turretBody.rotation = Quaternion.Slerp(turretBody.rotation, targetRotation, Time.deltaTime * 300f);
         }
 
-        private bool HasLineOfSight()
+        private bool HasLineOfSight()   //Using Raycaster to Detect If player is within Line Of Sight of the Player, this is for If there is an object Blocking the turret
         {
             if (player == null) return false;
 
@@ -135,14 +142,15 @@ namespace Turret
             return false;
         }
 
-        public void Shoot()
+        //Shooting
+        public void Shoot() 
         {
-            if (fireCooldown > 0f || overheatBool || currentAmmo <= 0) return;
+            if (fireCooldown > 0f || overheatBool || currentAmmo <= 0) return;  //Prevent Shooting when Overloading/Reloading
 
-            FireBullet(bulletIndex);
-            currentAmmo--;
-            fireCooldown = fireRate;
-            readyOverHeat++;
+            FireBullet(bulletIndex);    //Use ObjectPooler Index of Bullet
+            currentAmmo--;              //Decrease Current Ammo
+            fireCooldown = fireRate;    //Control bullet shot speed
+            readyOverHeat++;            //Ready Overheat for turret
 
             if (readyOverHeat >= 15)
             {
@@ -153,26 +161,27 @@ namespace Turret
 
         public void FireBullet(int bulletName)
         {
-            var bullet = ObjectPooler.DequeueObject<BulletController>(bulletName);
+            var bullet = ObjectPooler.DequeueObject<BulletController>(bulletName);              //Object Pooler Dequeue Object
             if (bullet != null)
             {
-                bullet.transform.position = firePoint.position;
-                bullet.gameObject.SetActive(true);
+                bullet.transform.position = firePoint.position; //Shoot from specific location
+                bullet.gameObject.SetActive(true);              //Bullet is active
 
-                Vector3 directionToPlayer = (player.position - firePoint.position).normalized;
-                bullet.Initialize(directionToPlayer);
+                Vector3 directionToPlayer = (player.position - firePoint.position).normalized;  //Find Player location
+                bullet.Initialize(directionToPlayer);           //Shoot to direction of Player
             }
         }
 
-        public void StartOverheating()
+        //Overheat
+        public void StartOverheating()  //Start Overheat Timer
         {
             StartCoroutine(OverheatCoroutine());
-        }
+        }   
 
-        private IEnumerator OverheatCoroutine()
+        private IEnumerator OverheatCoroutine() //Using Set State here for easier state manuevour & fix bug faster :p
         {
-            yield return new WaitForSeconds(overHeatTime);
-            overheatBool = false;
+            yield return new WaitForSeconds(overHeatTime);  //Overheat Timer
+            overheatBool = false;   //Stop Overheat
 
             if ((IsTargetInRange() && HasLineOfSight()))
             {
@@ -180,33 +189,35 @@ namespace Turret
             }
             else if ((!IsTargetInRange() && !HasLineOfSight()))
             {
-                stateMachine.SetState(new IdleState(this, animator));
+                stateMachine.SetState(new IdleState(this, animator));   //Back to Idle State
             }
             if (currentAmmo <= 0)
             {
-                stateMachine.SetState(new ReloadingState(this, animator));
+                stateMachine.SetState(new ReloadingState(this, animator));  //Continue to Reload State
             }
         }
 
-        public void Reload()
+        //Reload
+        public void Reload()    //Start Reload Timer
         {
             StartCoroutine(ReloadCoroutine());
         }
 
         private IEnumerator ReloadCoroutine()
         {
-            isReloading = true;
-            yield return new WaitForSeconds(reloadTime);
-            readyOverHeat = 0;
-            currentAmmo = maxAmmo;
-            isReloading = false;
+            isReloading = true;     //Stops other function when realoading
+            yield return new WaitForSeconds(reloadTime);    //Reload Timer 
+            readyOverHeat = 0;      //Reset Overheat Timer
+            currentAmmo = maxAmmo;  //Refills Ammo
+            isReloading = false;    //End Reloading
         }
 
-        public void ChangeTurretColor(Color targetColor)
+        //State Color Change
+        public void ChangeTurretColor(Color targetColor)    //Switch Color of Turret According To Curret State
         {
             if (turretRenderer != null)
             {
-                turretRenderer.material.color = targetColor;
+                turretRenderer.material.color = targetColor;    
             }
         }
     }
