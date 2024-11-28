@@ -159,9 +159,9 @@ namespace Turret
             }
         }
 
-        public void FireBullet(int bulletName)
+        public void FireBullet(int bulletIndex)
         {
-            var bullet = ObjectPooler.DequeueObject<BulletController>(bulletName);              //Object Pooler Dequeue Object
+            var bullet = ObjectPooler.DequeueObject<BulletController>(bulletIndex);              //Object Pooler Dequeue Object
             if (bullet != null)
             {
                 bullet.transform.position = firePoint.position; //Shoot from specific location
@@ -189,7 +189,7 @@ namespace Turret
             }
             else if ((!IsTargetInRange() && !HasLineOfSight()))
             {
-                stateMachine.SetState(new IdleState(this, animator));   //Back to Idle State
+                stateMachine.SetState(new IdleState(this, animator));       //Back to Idle State
             }
             if (currentAmmo <= 0)
             {
