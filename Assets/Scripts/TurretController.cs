@@ -157,7 +157,7 @@
                     overheatBool = true;
                     StartOverheating();
                 }
-            }
+            }   
 
             public void FireBullet(int bulletIndex)
             {
@@ -190,7 +190,8 @@
                 else if ((!IsTargetInRange() && !HasLineOfSight()))
                 {
                     stateMachine.SetState(new IdleState(this, animator));       //Back to Idle State
-                }
+                    readyOverHeat = 0;
+            }
                 if (currentAmmo <= 0)
                 {
                     stateMachine.SetState(new ReloadingState(this, animator));  //Continue to Reload State
