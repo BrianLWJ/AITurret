@@ -185,7 +185,7 @@ namespace Turret
 
             if ((IsTargetInRange() && HasLineOfSight()))
             {
-                readyOverHeat = 1;  //Fix Bug that when Overheat Finishes readyOverheat is lost by 1 count
+                readyOverHeat += 1;  //Fix Bug that when Overheat Finishes readyOverheat is lost by 1 count
             }
             else if ((!IsTargetInRange() && !HasLineOfSight()))
             {
@@ -208,6 +208,10 @@ namespace Turret
             isReloading = true;     //Stops other function when realoading
             yield return new WaitForSeconds(reloadTime);    //Reload Timer 
             readyOverHeat = 0;      //Reset Overheat Timer
+            if ((IsTargetInRange() && HasLineOfSight()))
+            {
+                readyOverHeat += 1;  //Fix Bug that when Overheat Finishes readyOverheat is lost by 1 count
+            }
             currentAmmo = maxAmmo;  //Refills Ammo
             isReloading = false;    //End Reloading
         }
