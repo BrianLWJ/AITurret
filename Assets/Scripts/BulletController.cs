@@ -9,6 +9,8 @@ public class BulletController : MonoBehaviour
     public Vector3 direction;
     //public string bulletName; // Unique name for the bullet's pool
     public int bulletIndex; // Unique index for the bullet's pool
+
+    private Coroutine lifetimeCoroutine; // Variable to store coroutine
     private void Awake()
     {
         //Initialize Rigidbody reference
@@ -43,7 +45,13 @@ public class BulletController : MonoBehaviour
         }
 
         // Start the lifetime countdown
-        StartCoroutine(LifetimeCoroutine());
+        if (lifetimeCoroutine != null)  //Check if coroutine already exists
+        {
+            StopCoroutine(lifetimeCoroutine); // Stop any existing coroutine
+        }
+
+        lifetimeCoroutine = StartCoroutine(LifetimeCoroutine());
+
     }
 
     private IEnumerator LifetimeCoroutine()     //Bullet LifeTimer
@@ -53,14 +61,30 @@ public class BulletController : MonoBehaviour
 
         //Return bullet to pool after lifetime
         ObjectPooler.EnqueueObject(this, bulletIndex);
+
+        //Clear coroutine check for this bullet
+        lifetimeCoroutine = null;
     }
 
-    private void OnCollisionEnter(Collision collision)      // Return bullet to pool on collision
+    private void OnCollisionEnter(Collision collision)      //Return bullet to pool on collision
 
-    {        
-        StartCoroutine(LifetimeCoroutine());    // Start the lifetime countdown.    Possibly No need this, IT Depends
-        //ObjectPooler.EnqueueObject(this, "Bullet");
-        //ObjectPooler.EnqueueObject(this, bulletIndex);
-
+    {
+        if (collision.collider.CompareTag("Player"))    //Detec Collision of Player
+        {
+            if (lifetimeCoroutine != null)
+            {
+                StopCoroutine(lifetimeCoroutine); //Stop lifetime coroutine
+                lifetimeCoroutine = null; // Clear coroutine check
+            }
+            //StartCoroutine(LifetimeCoroutine());    //Start the lifetime countdown    Possibly No need this, IT Depends
+            //ObjectPooler.EnqueueObject(this, "Bullet");
+            ObjectPooler.EnqueueObject(this, bulletIndex);
+        }
+        else
+        {
+            // Ignore collision with other objects
+            return;
+        }
     }
 }
+
