@@ -77,8 +77,8 @@
 
                 //Overheat -> ?
                 At(overheatState, shootingState, new FuncPredicate(() => !overheatBool && IsTargetInRange() && HasLineOfSight()));
-                At(overheatState, reloadingState, new FuncPredicate(() => !overheatBool && currentAmmo <= 0));
-                At(overheatState, idleState, new FuncPredicate(() => !overheatBool && !IsTargetInRange()));
+                At(overheatState, reloadingState, new FuncPredicate(() => !overheatBool && currentAmmo <= 0));  //(currentAmmo <= 0)
+                At(overheatState, idleState, new FuncPredicate(() => !overheatBool && !IsTargetInRange()));     //((!IsTargetInRange() && !HasLineOfSight()))
 
                 //Reloading -> ?
                 At(reloadingState, shootingState, new FuncPredicate(() => !isReloading && currentAmmo > 0 && IsTargetInRange() && HasLineOfSight()));
@@ -92,14 +92,15 @@
             void Any(IState to, IPredicate condition) => stateMachine.AddAnyTransition(to, condition); //NOT USED DUE TO MULTIPLE DIFF REQUIREMENTS FOR TRANSITIONS
             private void Update()
             {
-                stateMachine.Update();          //Constant State Machine Update for Use
-                fireCooldown -= Time.deltaTime; //Fire Cooldown for each bullet shot
+                stateMachine.Update();              //Constant State Machine Update for Use
+                //fireCooldown -= Time.deltaTime;   //Fire Cooldown for each bullet shot
             }
 
             private void FixedUpdate()
             {
-                stateMachine.FixedUpdate(); //Constant State Machine Fixed Update for Use
-            }
+                stateMachine.FixedUpdate();         //Constant State Machine Fixed Update for Use
+                fireCooldown -= Time.deltaTime;     //Fire Cooldown for each bullet shot
+        }
 
             //Idle
             public void OnIdle()
@@ -206,7 +207,7 @@
 
             private IEnumerator ReloadCoroutine()
             {
-                isReloading = true;     //Stops other function when realoading
+                isReloading = true;     //Stops other function when reloading
                 yield return new WaitForSeconds(reloadTime);    //Reload Timer 
                 readyOverHeat = 0;      //Reset Overheat Timer
                 if ((IsTargetInRange() && HasLineOfSight()))
